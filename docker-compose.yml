@@ -1,0 +1,27 @@
+services:
+    sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        environment:
+            SA_PASSWORD: "TKjXDiZbAgKrNGIVVN9q"
+            MSSQL_SA_PASSWORD: "TKjXDiZbAgKrNGIVVN9q"
+            ACCEPT_EULA: "Y"
+            MSSQL_PID: "Developer"
+        ports:
+            - "1433:1433"
+        volumes:
+            - sql_data:/var/opt/mssql
+
+    aspnetapp:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        depends_on:
+            - sqlserver
+        ports:
+            - "8000:80"
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ColaboradorCrud;User Id=SA;Password=TKjXDiZbAgKrNGIVVN9q;TrustServerCertificate=True;MultipleActiveResultSets=true;
+
+volumes:
+    sql_data:
+        driver: local
