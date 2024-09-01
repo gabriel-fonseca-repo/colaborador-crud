@@ -1,0 +1,8 @@
+nav {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}

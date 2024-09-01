@@ -1,4 +1,5 @@
-﻿using backend.Controllers.Entities;
+﻿using backend.Controllers.DTO;
+using backend.Controllers.Entities;
 using backend.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,14 +14,20 @@ namespace backend.Controllers
         private readonly DataContext _dataContext = dataContext;
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Colaborador>>> GetAllColaboradores()
+        public async Task<ActionResult<IEnumerable<GetColaboradorDTO>>> GetAllColaboradores()
         {
             var colaboradores = await _dataContext.Colaboradores.ToListAsync();
-            return Ok(colaboradores);
+            var colaboradoresDto = colaboradores.Select(colaborador => new GetColaboradorDTO
+            {
+                Name = colaborador.Name,
+                FirstName = colaborador.FirstName,
+                LastName = colaborador.LastName
+            }).ToList();
+            return Ok(colaboradoresDto);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Colaborador>> GetColaborador(int id)
+        public async Task<ActionResult<GetColaboradorDTO>> GetColaborador(int id)
         {
             var colaborador = await _dataContext.Colaboradores.FindAsync(id);
 
@@ -28,11 +35,18 @@ namespace backend.Controllers
                 return NotFound("Colaborador não encontrado.");
             }
 
-            return Ok(colaborador);
+            var colaboradorDto = new GetColaboradorDTO
+            {
+                Name = colaborador.Name,
+                FirstName = colaborador.FirstName,
+                LastName = colaborador.LastName
+            };
+
+            return Ok(colaboradorDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddColaborador(Colaborador colaborador)
+        public async Task<ActionResult> AddColaborador(AddColaboradorDTO colaborador)
         {
 
             if (colaborador is null)
@@ -42,18 +56,24 @@ namespace backend.Controllers
             if (colaborador.LastName is null)
                 return BadRequest("Sobrenome do colaborador faltando ou nulo.");
 
-            _dataContext.Colaboradores.Add(colaborador);
+            var dbColaborador = new Colaborador
+            {
+                FirstName = colaborador.FirstName,
+                LastName = colaborador.LastName
+            };
+
+            _dataContext.Colaboradores.Add(dbColaborador);
             await _dataContext.SaveChangesAsync();
 
             return Ok("Colaborador cadastrado com sucesso.");
         }
 
         [HttpPut]
-        public async Task<ActionResult> UpdateColaborador(Colaborador colaborador)
+        public async Task<ActionResult> UpdateColaborador(UpdateColaboradorDTO colaborador)
         {
             if (colaborador is null)
                 return BadRequest("Corpo da requisição faltando ou nulo.");
-            if (colaborador.Id is 0)
+            if (colaborador.Id is 0 or < 0)
                 return BadRequest("Id do colaborador inválido.");
             if (colaborador.FirstName is null)
                 return BadRequest("Nome do colaborador faltando ou nulo.");
@@ -72,11 +92,10 @@ namespace backend.Controllers
             return Ok("Colaborador atualizado com sucesso.");
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteColaborador(int id)
         {
-
-            if (id is 0)
+            if (id is 0 or < 0)
                 return BadRequest("Id do colaborador inválido.");
 
             var dbColaborador = await _dataContext.Colaboradores.FindAsync(id);

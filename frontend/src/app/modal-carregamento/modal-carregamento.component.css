@@ -1,0 +1,34 @@
+.overlay-carregamento {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding-left: 10rem;
+  padding-right: 10rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+mat-progress-bar {
+  width: 7rem;
+  margin-bottom: 0.5rem;
+}
+
+mat-card {
+  height: 5rem;
+  width: 10rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+mat-card-header {
+  padding: 0 16px 0;
+}

@@ -482,3 +482,37 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+# Node
+/node_modules
+frontend/npm-debug.log
+frontend/yarn-error.log
+# IDEs and editors
+frontend/.idea/
+frontend/.project
+frontend/.classpath
+frontend/.c9/
+frontend/*.launch
+frontend/.settings/
+frontend/*.sublime-workspace
+# Visual Studio Code
+frontend/.vscode/*
+frontend/.history/*
+# Miscellaneous
+frontend/.angular/cache
+frontend/.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+# System files
+.DS_Store
+Thumbs.db
