@@ -1,9 +1,11 @@
-﻿namespace backend.Controllers.DTO
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace backend.Controllers.DTO
 {
     public class AddColaboradorDTO
     {
-        public required string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        public required string LastName { get; set; }
+        public string? LastName { get; set; }
     }
 }

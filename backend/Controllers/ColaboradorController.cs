@@ -13,17 +13,39 @@ namespace backend.Controllers
 
         private readonly DataContext _dataContext = dataContext;
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<GetColaboradorDTO>>> GetAllColaboradores()
+        [HttpGet("{pageNumber}/{pageSize}")]
+        public async Task<ActionResult<IEnumerable<PaginateColaboradoresDTO>>> PaginateColaboradores(int pageNumber = 1, int pageSize = 10)
         {
-            var colaboradores = await _dataContext.Colaboradores.ToListAsync();
+            if (pageNumber is < 0)
+            {
+                pageNumber = 0;
+            }
+
+            int skip = pageNumber * pageSize;
+
+            var colaboradores = await _dataContext.Colaboradores
+                .OrderBy(colaborador => colaborador.Id)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var countColaboradores = _dataContext.Colaboradores.Count();
+
             var colaboradoresDto = colaboradores.Select(colaborador => new GetColaboradorDTO
             {
+                Id = colaborador.Id,
                 Name = colaborador.Name,
                 FirstName = colaborador.FirstName,
                 LastName = colaborador.LastName
             }).ToList();
-            return Ok(colaboradoresDto);
+
+            var pagination = new PaginateColaboradoresDTO
+            {
+                Count = countColaboradores,
+                Colaboradores = colaboradoresDto
+            };
+
+            return Ok(pagination);
         }
 
         [HttpGet("{id}")]
@@ -31,7 +53,8 @@ namespace backend.Controllers
         {
             var colaborador = await _dataContext.Colaboradores.FindAsync(id);
 
-            if (colaborador is null) {
+            if (colaborador is null)
+            {
                 return NotFound("Colaborador não encontrado.");
             }
 
@@ -48,12 +71,11 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult> AddColaborador(AddColaboradorDTO colaborador)
         {
-
             if (colaborador is null)
                 return BadRequest("Corpo da requisição faltando ou nulo.");
-            if (colaborador.FirstName is null)
+            if (string.IsNullOrWhiteSpace(colaborador.FirstName))
                 return BadRequest("Nome do colaborador faltando ou nulo.");
-            if (colaborador.LastName is null)
+            if (string.IsNullOrWhiteSpace(colaborador.LastName))
                 return BadRequest("Sobrenome do colaborador faltando ou nulo.");
 
             var dbColaborador = new Colaborador
@@ -68,19 +90,19 @@ namespace backend.Controllers
             return Ok("Colaborador cadastrado com sucesso.");
         }
 
-        [HttpPut]
-        public async Task<ActionResult> UpdateColaborador(UpdateColaboradorDTO colaborador)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateColaborador(int id, UpdateColaboradorDTO colaborador)
         {
             if (colaborador is null)
                 return BadRequest("Corpo da requisição faltando ou nulo.");
-            if (colaborador.Id is 0 or < 0)
+            if (id is 0 or < 0)
                 return BadRequest("Id do colaborador inválido.");
-            if (colaborador.FirstName is null)
+            if (string.IsNullOrWhiteSpace(colaborador.FirstName))
                 return BadRequest("Nome do colaborador faltando ou nulo.");
-            if (colaborador.LastName is null)
+            if (string.IsNullOrWhiteSpace(colaborador.LastName))
                 return BadRequest("Sobrenome do colaborador faltando ou nulo.");
 
-            var dbColaborador = await _dataContext.Colaboradores.FindAsync(colaborador.Id);
+            var dbColaborador = await _dataContext.Colaboradores.FindAsync(id);
 
             if (dbColaborador is null)
                 return NotFound("Colaborador não encontrado.");

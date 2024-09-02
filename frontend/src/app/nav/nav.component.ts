@@ -10,7 +10,6 @@ import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/r
   template: `
     <nav>
       <a mat-flat-button routerLink="/cadastro" routerLinkActive="active" [disabled]="isActive('/cadastro')">Cadastro</a>
-      <a mat-flat-button routerLink="/atualizacao" routerLinkActive="active" [disabled]="isActive('/atualizacao')">Atualização</a>
       <a mat-flat-button routerLink="/ponto" routerLinkActive="active" [disabled]="isActive('/ponto')">Bater ponto</a>
     </nav>
   `
