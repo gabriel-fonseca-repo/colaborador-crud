@@ -5,6 +5,12 @@ main {
   width: 100%;
 }
 
+section {
+  width: 100%;
+  padding-left: 12rem;
+  padding-right: 12rem;
+}
+
 main {
   display: grid;
   align-content: center;

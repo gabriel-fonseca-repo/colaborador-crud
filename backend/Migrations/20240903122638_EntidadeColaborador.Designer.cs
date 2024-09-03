@@ -11,8 +11,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240901174908_Initial")]
-    partial class Initial
+    [Migration("20240903122638_EntidadeColaborador")]
+    partial class EntidadeColaborador
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,11 +32,21 @@ namespace backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FirstName")
+                    b.Property<int>("Cargo")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Matricula")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LastName")
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Salario")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Sobrenome")
                         .IsRequired()
                         .HasColumnType("text");
 

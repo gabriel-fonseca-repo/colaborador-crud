@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class EntidadeColaborador : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,8 +17,11 @@ namespace backend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
-                    LastName = table.Column<string>(type: "text", nullable: false)
+                    Nome = table.Column<string>(type: "text", nullable: false),
+                    Sobrenome = table.Column<string>(type: "text", nullable: false),
+                    Matricula = table.Column<string>(type: "text", nullable: false),
+                    Cargo = table.Column<int>(type: "integer", nullable: false),
+                    Salario = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -1,13 +1,21 @@
-﻿namespace backend.Controllers.DTO
+﻿using backend.Controllers.Enum;
+
+namespace backend.Controllers.DTO
 {
     public class GetColaboradorDTO
     {
         public int Id { get; set; }
 
-        public string? Name { get; set; }
+        public string? NomeCompleto { get; set; }
 
-        public string? FirstName { get; set; }
+        public string? Nome { get; set; }
 
-        public string? LastName { get; set; }
+        public string? Sobrenome { get; set; }
+
+        public string? Matricula { get; set; }
+
+        public Cargo Cargo { get; set; }
+
+        public decimal Salario { get; set; }
     }
 }

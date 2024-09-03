@@ -4,6 +4,6 @@
     {
         public int Count { get; set; }
 
-        public List<GetColaboradorDTO> Colaboradores { get; set; }
+        public required List<GetColaboradorDTO> Colaboradores { get; set; }
     }
 }
