@@ -6,6 +6,6 @@ namespace backend.Controllers.DTO
     {
         public int Count { get; set; }
 
-        public required List<GetPontosColaboradorDTO> Colaboradores { get; set; }
+        public required List<GetPontosColaboradorDTO> Pontos { get; set; }
     }
 }

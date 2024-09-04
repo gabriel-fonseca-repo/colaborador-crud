@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Data;
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240904012619_SistemaPontos")]
+    partial class SistemaPontos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,7 +70,7 @@ namespace backend.Migrations
                     b.Property<bool>("Ativa")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("Fim")
+                    b.Property<DateTime>("Fim")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("Inicio")
@@ -100,7 +103,7 @@ namespace backend.Migrations
                     b.Property<DateTime>("HorarioDataEntrada")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("HorarioDataSaida")
+                    b.Property<DateTime>("HorarioDataSaida")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");

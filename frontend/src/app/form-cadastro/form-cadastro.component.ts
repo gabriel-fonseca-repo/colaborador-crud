@@ -75,6 +75,8 @@ export interface CargosEnum {
         <mat-form-field appearance="outline">
           <mat-label>Salário</mat-label>
           <input matInput type="number" formControlName="salario" name="salario" id="salario" />
+          <span matTextPrefix>R$&nbsp;</span>
+          <span matTextSuffix>,00</span>
         </mat-form-field>
       </div>
 
@@ -139,8 +141,7 @@ export class FormCadastroComponent implements OnInit{
       return;
     }
     const url = environment.backendUrl;
-    this.http
-      .post(
+    this.http.post(
         url + '/Colaborador',
         JSON.stringify(this.cadastroColaboradorForm.value),
         {

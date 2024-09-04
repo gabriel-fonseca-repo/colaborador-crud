@@ -16,6 +16,9 @@ namespace backend.Data
         {
             base.OnModelCreating(builder);
 
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+
             builder.Entity<Colaborador>()
                 .HasIndex(u => u.Matricula)
                 .IsUnique();
@@ -25,10 +28,18 @@ namespace backend.Data
                 .WithMany(c => c.Pontos)
                 .HasForeignKey(p => p.ColaboradorId);
 
+            builder.Entity<Ponto>()
+                .Property(p => p.HorarioDataSaida)
+                .IsRequired(false);
+
             builder.Entity<Pausa>()
                 .HasOne(p => p.Ponto)
                 .WithMany(c => c.Pausas)
                 .HasForeignKey(p => p.PontoId);
+
+            builder.Entity<Pausa>()
+                .Property(p => p.Fim)
+                .IsRequired(false);
         }
     }
 }

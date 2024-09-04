@@ -1,6 +1,6 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { environment } from '../../environment/environment';
@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { UpdateDataTableService } from '../update-data-table.service';
 
 export interface GetAutocompleteDTO {
   id: number;
@@ -67,15 +68,15 @@ export interface PaginatePontosColaboradorDTO {
               matInput
               [formControl]="inputColaboradorControl"
               [matAutocomplete]="auto"
-              (input)="consultarColaboradores()"
-              (focus)="consultarColaboradores()">
-        <mat-autocomplete requireSelection #auto="matAutocomplete">
+              (keyup)="consultarColaboradores()">
+        <mat-autocomplete requireSelection #auto="matAutocomplete" (optionSelected)="consultarPontosColaborador()">
           @for (colaborador of colaboradoresFiltrados; track colaboradoresFiltrados) {
             <mat-option [value]="colaborador.campoAutocomplete">{{colaborador.campoAutocomplete}}</mat-option>
           }
         </mat-autocomplete>
       </mat-form-field>
       <button type="submit" mat-flat-button [disabled]="!inputColaboradorControl.valid">Bater ponto</button>
+      <button type="button" mat-flat-button>Relatório</button>
     </form>
     <app-modal-carregamento [isLoading]="isLoading"></app-modal-carregamento>
     <table mat-table matSort [dataSource]="dataSource" class="mat-elevation-z8">
@@ -85,28 +86,36 @@ export interface PaginatePontosColaboradorDTO {
       </ng-container>
       <ng-container matColumnDef="horarioDataEntrada">
         <th mat-header-cell *matHeaderCellDef> Entrada </th>
-        <td mat-cell *matCellDef="let element"> {{element.horarioDataEntrada | date: 'dd/MM/yyyy HH:mm:ss'}} </td>
+        <td mat-cell *matCellDef="let element"> {{element.horarioDataEntrada | date: 'dd/MM/yyyy HH:mm'}} </td>
       </ng-container>
       <ng-container matColumnDef="horarioDataSaida">
         <th mat-header-cell *matHeaderCellDef> Saída </th>
-        <td mat-cell *matCellDef="let element"> {{element.horarioDataSaida | date: 'dd/MM/yyyy HH:mm:ss'}} </td>
+        <td mat-cell *matCellDef="let element"> {{element.horarioDataSaida | date: 'dd/MM/yyyy HH:mm'}} </td>
       </ng-container>
       <ng-container matColumnDef="ativo">
         <th mat-header-cell *matHeaderCellDef> Ativo </th>
-        <td mat-cell *matCellDef="let element"> {{element.ativo}} </td>
+        <td mat-cell *matCellDef="let element"> {{element.ativo ? "Sim" : "Não"}} </td>
       </ng-container>
       <ng-container matColumnDef="update">
         <th mat-header-cell *matHeaderCellDef> Pausar/Despausar </th>
         <td mat-cell *matCellDef="let element">
-        @if (element.ativo) {
-          <button mat-icon-button (click)="pausarPonto(element)">
-            <mat-icon>pause</mat-icon>
-          </button>
-        } @else {
-          <button mat-icon-button (click)="despausarPonto(element)">
-            <mat-icon>unpause</mat-icon>
-          </button>
-        }
+          @if (!isPontoPausado(element)) {
+            <button mat-icon-button (click)="pausarPonto(element)" disabled="{{!element.ativo}}">
+              <mat-icon>pause</mat-icon>
+            </button>
+          } @else if (isPontoPausado(element)) {
+            <button mat-icon-button (click)="despausarPonto(element)" disabled="{{!element.ativo}}">
+              <mat-icon>play_arrow</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="finalize">
+        <th mat-header-cell *matHeaderCellDef> Bater saída </th>
+        <td mat-cell *matCellDef="let element">
+            <button mat-icon-button (click)="baterPontoSaida()" disabled="{{!element.ativo}}">
+              <mat-icon>block</mat-icon>
+            </button>
         </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -116,11 +125,11 @@ export interface PaginatePontosColaboradorDTO {
                    [pageIndex]="0"
                    [pageSize]="10"
                    [pageSizeOptions]="[5, 10, 20]"
-                   (page)="loadPontos()"
+                   (page)="consultarPontosColaborador()"
                    showFirstLastButtons>
   `
 })
-export class FormBaterPontoComponent {
+export class FormBaterPontoComponent implements AfterViewInit {
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
@@ -137,37 +146,26 @@ export class FormBaterPontoComponent {
     'horarioDataEntrada',
     'horarioDataSaida',
     'ativo',
-    'update'
+    'update',
+    'finalize'
   ];
   dataSource = new MatTableDataSource<GetPontosColaboradorDTO>([]);
 
   constructor(
     private http: HttpClient,
     private snackbar: MatSnackBar,
+    private updateDtService: UpdateDataTableService,
   ) {
   }
 
-  fetchPontosColaborador(element: any) {
-    const url = environment.backendUrl;
-
-    this.isLoading = true;
-    this.http
-    .get(url + `/Pontos/${element.id}`,
-      {
-        headers: { 'Content-Type': 'application/json' },
-        observe: 'response',
-        responseType: 'json'
-      })
-    .subscribe({
-      next: (res) => {
-        this.dataSource.data = res.body as GetPontosColaboradorDTO[];
-      },
-      error: (err) => {
-        openSnackBar(this.snackbar, err.error);
-      }
-    }).add(() => {
-      this.isLoading = false;
+  ngAfterViewInit() {
+    this.updateDtService.refreshNeeded.subscribe(() => {
+      this.consultarPontosColaborador();
     });
+  }
+
+  isPontoPausado(ponto: GetPontosColaboradorDTO) {
+    return ponto.pausas.some(p => p.ativa);
   }
 
   pausarPonto(element: any) {
@@ -176,20 +174,22 @@ export class FormBaterPontoComponent {
     this.isLoading = true;
     this.http
     .post(url + `/Pontos/Pausar/${element.id}`,
+      null,
       {
         headers: { 'Content-Type': 'application/json' },
         observe: 'response',
-        responseType: 'json'
+        responseType: 'text'
       })
     .subscribe({
       next: (res) => {
-        openSnackBar(this.snackbar, 'Ponto pausado com sucesso.');
-        this.fetchPontosColaborador(element);
+        openSnackBar(this.snackbar, res.body);
+        this.consultarPontosColaborador();
       },
       error: (err) => {
         openSnackBar(this.snackbar, err.error);
       }
     }).add(() => {
+      this.updateDtService.notifyDataChange();
       this.isLoading = false;
     });
   }
@@ -199,26 +199,28 @@ export class FormBaterPontoComponent {
 
     this.isLoading = true;
     this.http
-    .post(url + `/Pontos/Despausar/${element.id}`,
+    .put(url + `/Pontos/Despausar/${element.id}`,
+      null,
       {
         headers: { 'Content-Type': 'application/json' },
         observe: 'response',
-        responseType: 'json'
+        responseType: 'text'
       })
     .subscribe({
       next: (res) => {
-        openSnackBar(this.snackbar, 'Ponto despausado com sucesso.');
-        this.fetchPontosColaborador(element);
+        openSnackBar(this.snackbar, res.body);
+        this.consultarPontosColaborador();
       },
       error: (err) => {
         openSnackBar(this.snackbar, err.error);
       }
     }).add(() => {
+      this.updateDtService.notifyDataChange();
       this.isLoading = false;
     });
   }
 
-  loadPontos() {
+  consultarPontosColaborador() {
     const url = environment.backendUrl;
 
     if (!this.inputColaboradorControl.valid) {
@@ -292,6 +294,45 @@ export class FormBaterPontoComponent {
         openSnackBar(this.snackbar, err.error);
       }
     }).add(() => {
+      this.updateDtService.notifyDataChange();
+      this.isLoading = false;
+    });
+  }
+
+  baterPontoSaida() {
+    const url = environment.backendUrl;
+
+    if (!this.inputColaboradorControl.valid) {
+      openSnackBar(this.snackbar, 'Selecione um colaborador.');
+      return;
+    }
+
+    this.isLoading = true;
+    let idColaborador = this.colaboradoresFiltrados.find(c => {
+      return c.campoAutocomplete === this.inputColaboradorControl.value;
+    })?.id;
+
+    if (!idColaborador) {
+      openSnackBar(this.snackbar, 'Colaborador não encontrado.');
+      return;
+    }
+
+    this.http.put(url + `/Pontos/Bater/${idColaborador}`,
+      null,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        observe: 'response',
+        responseType: 'text'
+      })
+    .subscribe({
+      next: (res) => {
+        openSnackBar(this.snackbar, res.body);
+      },
+      error: (err) => {
+        openSnackBar(this.snackbar, err.error);
+      }
+    }).add(() => {
+      this.updateDtService.notifyDataChange();
       this.isLoading = false;
     });
   }

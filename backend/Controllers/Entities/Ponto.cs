@@ -6,9 +6,9 @@ namespace backend.Controllers.Entities
     {
         public int Id { get; set; }
 
-        public required DateTime HorarioDataEntrada { get; set; }
+        public required DateTime HorarioDataEntrada { get; set; } = DateTime.Now;
 
-        public DateTime HorarioDataSaida { get; set; }
+        public DateTime? HorarioDataSaida { get; set; }
 
         public bool Ativo { get; set; }
 

@@ -4,9 +4,9 @@
     {
         public int Id { get; set; }
 
-        public required DateTime Inicio { get; set; }
+        public required DateTime Inicio { get; set; } = DateTime.Now;
 
-        public DateTime Fim { get; set; }
+        public DateTime? Fim { get; set; }
 
         public required int PontoId { get; set; }
 

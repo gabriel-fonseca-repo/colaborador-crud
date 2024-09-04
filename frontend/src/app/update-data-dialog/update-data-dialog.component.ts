@@ -62,6 +62,8 @@ import { MatSelectModule } from '@angular/material/select';
           <mat-form-field>
             <mat-label>Salário</mat-label>
             <input matInput type="number" formControlName="updateSalario" name="updateSalario" id="updateSalario" />
+            <span matTextPrefix>R$&nbsp;</span>
+            <span matTextSuffix>,00</span>
           </mat-form-field>
         </div>
       </div>

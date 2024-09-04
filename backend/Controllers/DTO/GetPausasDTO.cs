@@ -6,7 +6,7 @@
 
         public required DateTime Inicio { get; set; }
 
-        public DateTime Fim { get; set; }
+        public DateTime? Fim { get; set; }
 
         public required bool Ativa { get; set; }
     }
