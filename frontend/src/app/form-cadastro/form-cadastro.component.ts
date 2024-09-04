@@ -87,11 +87,11 @@ export interface CargosEnum {
 })
 export class FormCadastroComponent implements OnInit{
   cadastroColaboradorForm = new FormGroup({
-    nome: new FormControl('', [Validators.required, Validators.pattern("^[A-Z][a-z]*$")]),
-    sobrenome: new FormControl('', [Validators.required, Validators.pattern("^[A-Z][a-z]*$")]),
-    matricula: new FormControl('', [Validators.required, Validators.maxLength(6), Validators.pattern("^[0-9]{6}$")]),
-    cargo: new FormControl(0, [Validators.required]),
-    salario: new FormControl(0, [Validators.required])
+    nome: new FormControl('Gabriel', [Validators.required, Validators.pattern("^[A-Z][a-z]*$")]),
+    sobrenome: new FormControl('Fonseca', [Validators.required, Validators.pattern("^[A-Z][a-z]*$")]),
+    matricula: new FormControl('211111', [Validators.required, Validators.maxLength(6), Validators.pattern("^[0-9]{6}$")]),
+    cargo: new FormControl(3, [Validators.required]),
+    salario: new FormControl(3000, [Validators.required])
   });
 
   cargos: CargosEnum[] = [
@@ -152,6 +152,7 @@ export class FormCadastroComponent implements OnInit{
       )
       .subscribe({
         next: (res) => {
+          console.log(res.body);
           openSnackBar(this.snackbar, res.body);
         },
         error: (err) => {

@@ -7,11 +7,28 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class SistemaPontos : Migration
+    public partial class InitSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Colaboradores",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "text", nullable: false),
+                    Sobrenome = table.Column<string>(type: "text", nullable: false),
+                    Matricula = table.Column<string>(type: "text", nullable: false),
+                    Cargo = table.Column<int>(type: "integer", nullable: false),
+                    Salario = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Colaboradores", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Pontos",
                 columns: table => new
@@ -19,7 +36,7 @@ namespace backend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     HorarioDataEntrada = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    HorarioDataSaida = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    HorarioDataSaida = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Ativo = table.Column<bool>(type: "boolean", nullable: false),
                     ColaboradorId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -41,7 +58,7 @@ namespace backend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Inicio = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Fim = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Fim = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     PontoId = table.Column<int>(type: "integer", nullable: false),
                     Ativa = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -82,9 +99,8 @@ namespace backend.Migrations
             migrationBuilder.DropTable(
                 name: "Pontos");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Colaboradores_Matricula",
-                table: "Colaboradores");
+            migrationBuilder.DropTable(
+                name: "Colaboradores");
         }
     }
 }

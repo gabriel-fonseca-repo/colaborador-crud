@@ -1,6 +1,7 @@
 ﻿using backend.Controllers.DTO;
 using backend.Controllers.Entities;
 using backend.Controllers.Enum;
+using backend.Controllers.Utils;
 using backend.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -197,6 +198,55 @@ namespace backend.Controllers
             }).ToList();
 
             return Ok(autocompleteData);
+        }
+
+        [HttpGet("Relatorio/{ano}/{mes}")]
+        public FileStreamResult GetRelatorioMensal(int ano, int mes)
+        {
+            var dadosRelatorio = _dataContext.Pontos
+                .Include(p => p.Pausas)
+                .Where(p => p.HorarioDataEntrada.Year == ano && p.HorarioDataEntrada.Month == mes)
+                .Select(p => new
+                {
+                    p.Colaborador,
+                    p.Colaborador.Matricula,
+                    Nome = p.Colaborador.NomeCompleto,
+                    p.HorarioDataEntrada.Date,
+                    HorasTrabalhadas = RelatorioUtils.CalcularHorasTrabalhadas(p)
+                })
+                .AsEnumerable()
+                .GroupBy(p => new { p.Colaborador.Id, p.Colaborador.Matricula, p.Colaborador.NomeCompleto, p.Date })
+                .Select(g => new RelatorioColaboradorDTO
+                {
+                    ColaboradorId = g.Key.Id,
+                    NomeColaborador = g.Key.NomeCompleto,
+                    Matricula = g.Key.Matricula,
+                    Data = g.Key.Date,
+                    HorasTrabalhadas = TimeSpan.FromMinutes(g.Sum(x => x.HorasTrabalhadas.TotalMinutes))
+                })
+                .OrderBy(x => x.ColaboradorId).ThenBy(x => x.Data);
+
+            var idsComPontos = dadosRelatorio.Select(c => c.ColaboradorId).Distinct();
+
+            var colaboradoresSemPontos = _dataContext.Colaboradores
+                .Where(c => !idsComPontos.Contains(c.Id))
+                .ToList()
+                .Select(c => new RelatorioColaboradorDTO
+                {
+                    ColaboradorId = c.Id,
+                    NomeColaborador = c.NomeCompleto,
+                    Matricula = c.Matricula,
+                    Data = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
+                    HorasTrabalhadas = TimeSpan.Zero
+                })
+                .OrderBy(c => c.ColaboradorId)
+                .ThenBy(x => x.Data);
+
+            var stream = RelatorioUtils.RelatorioCsvStream(
+                [.. dadosRelatorio.Concat(colaboradoresSemPontos)]
+            );
+
+            return File(stream, "text/csv", $"Relatorio_{ano}_{mes}.csv");
         }
     }
 }

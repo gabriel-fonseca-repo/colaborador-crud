@@ -13,13 +13,19 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod();
+        // Para propósito de ergonomia de desenvolvimento, foi permitido qualquer origem.
+        // Nota-se que devem ser limitadas as origens permitidas em ambiente de produção.
+        // Utilizando o método WithOrigins("http://example.com") para permitir apenas a origem do client.
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseNpgsql(builder.Configuration.GetConnectionString(builder.Environment.IsDevelopment()
+        ? "DevelopmentConnection"
+        : "DefaultConnection"
+    ),
     options => options.EnableRetryOnFailure());
 });
 
@@ -29,6 +35,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    dbContext.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

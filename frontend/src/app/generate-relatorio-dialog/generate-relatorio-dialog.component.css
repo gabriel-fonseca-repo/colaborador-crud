@@ -1,0 +1,4 @@
+div[mat-dialog-content] {
+  margin-top: 20px;
+  overflow: visible !important;
+}

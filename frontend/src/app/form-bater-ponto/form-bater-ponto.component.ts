@@ -13,7 +13,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { UpdateDataTableService } from '../update-data-table.service';
+import { MatDialog } from '@angular/material/dialog';
+import { GenerateRelatorioDialogComponent } from '../generate-relatorio-dialog/generate-relatorio-dialog.component';
+import { UpdateColaboradorDataTableService } from '../update-colaborador-data-table.service';
 
 export interface GetAutocompleteDTO {
   id: number;
@@ -76,7 +78,7 @@ export interface PaginatePontosColaboradorDTO {
         </mat-autocomplete>
       </mat-form-field>
       <button type="submit" mat-flat-button [disabled]="!inputColaboradorControl.valid">Bater ponto</button>
-      <button type="button" mat-flat-button>Relatório</button>
+      <button type="button" mat-flat-button (click)="gerarRelatorio()">Relatório</button>
     </form>
     <app-modal-carregamento [isLoading]="isLoading"></app-modal-carregamento>
     <table mat-table matSort [dataSource]="dataSource" class="mat-elevation-z8">
@@ -154,7 +156,8 @@ export class FormBaterPontoComponent implements AfterViewInit {
   constructor(
     private http: HttpClient,
     private snackbar: MatSnackBar,
-    private updateDtService: UpdateDataTableService,
+    private updateDtService: UpdateColaboradorDataTableService,
+    public dialog: MatDialog
   ) {
   }
 
@@ -224,7 +227,6 @@ export class FormBaterPontoComponent implements AfterViewInit {
     const url = environment.backendUrl;
 
     if (!this.inputColaboradorControl.valid) {
-      openSnackBar(this.snackbar, 'Selecione um colaborador.');
       return;
     }
 
@@ -265,7 +267,6 @@ export class FormBaterPontoComponent implements AfterViewInit {
     const url = environment.backendUrl;
 
     if (!this.inputColaboradorControl.valid) {
-      openSnackBar(this.snackbar, 'Selecione um colaborador.');
       return;
     }
 
@@ -303,7 +304,6 @@ export class FormBaterPontoComponent implements AfterViewInit {
     const url = environment.backendUrl;
 
     if (!this.inputColaboradorControl.valid) {
-      openSnackBar(this.snackbar, 'Selecione um colaborador.');
       return;
     }
 
@@ -361,6 +361,57 @@ export class FormBaterPontoComponent implements AfterViewInit {
       error: (err) => {
         openSnackBar(this.snackbar, "Erro ao buscar colaboradores.");
         this.isFilteringStill = false;
+      }
+    });
+  }
+
+  gerarRelatorio() {
+
+    const dialogRef = this.dialog.open(GenerateRelatorioDialogComponent, {
+      data: { date: new FormControl<Date>(new Date(), [Validators.required]) },
+    });
+
+    const salvarArquivoFunc = (data: Blob, filename: string) => {
+      const a = document.createElement('a');
+      const url = window.URL.createObjectURL(data);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    }
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        result = result as Date;
+
+        let mes = result.getMonth() + 1;
+        let ano = result.getFullYear();
+
+        this.isLoading = true;
+        const url = environment.backendUrl;
+
+        this.http
+        .get(url + `/Colaborador/Relatorio/${ano}/${mes}`,
+          {
+            headers: { 'Content-Type': 'application/json' },
+            observe: 'response',
+            responseType: 'blob',
+          })
+        .subscribe({
+          next: (blob) => {
+            if (blob.body) {
+              salvarArquivoFunc(blob.body, `Relatorio_${mes}_${ano}.csv`);
+            }
+          },
+          error: (err) => {
+            openSnackBar(this.snackbar, err.error);
+          },
+        }).add(() => {
+          this.updateDtService.notifyDataChange();
+          this.isLoading = false;
+        });
       }
     });
   }

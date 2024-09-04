@@ -16,7 +16,6 @@ import { NavComponent } from './nav/nav.component';
         <app-layout />
       </section>
       <footer>
-        Footer
       </footer>
     </main>
   `

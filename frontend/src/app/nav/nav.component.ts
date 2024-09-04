@@ -9,8 +9,8 @@ import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/r
   styleUrl: './nav.component.css',
   template: `
     <nav>
-      <a mat-flat-button routerLink="/cadastro" routerLinkActive="active" [disabled]="isActive('/cadastro')">Cadastro</a>
-      <a mat-flat-button routerLink="/ponto" routerLinkActive="active" [disabled]="isActive('/ponto')">Bater ponto</a>
+      <a mat-flat-button routerLink="/cadastro" routerLinkActive="active" [disabled]="isActive('/cadastro')">Cadastro de colaborador</a>
+      <a mat-flat-button routerLink="/ponto" routerLinkActive="active" [disabled]="isActive('/ponto')">Cadastro de ponto</a>
     </nav>
   `
 })
